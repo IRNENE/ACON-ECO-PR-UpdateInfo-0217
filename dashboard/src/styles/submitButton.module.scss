@@ -1,0 +1,54 @@
+.inputButton {
+  background: linear-gradient(
+    124deg,
+    rgba(56, 249, 215, 1) 0%,
+    rgba(75, 198, 246, 1) 100%
+  );
+  padding: 3px;
+  border-radius: 23px;
+  transition: all 0.3s ease;
+
+  &.enabled {
+    background: linear-gradient(
+      12deg,
+      rgba(46, 213, 115, 1) 0%,
+      rgba(123, 237, 159, 1) 100%
+    );
+  }
+  &.disabled {
+    background: linear-gradient(
+      124deg,
+      rgba(56, 249, 215, 1) 0%,
+      rgba(75, 198, 246, 1) 100%
+    );
+  }
+  .submitButton {
+    width: 100%;
+    padding: 14px 72px;
+    border-radius: 20px;
+    border: none;
+    background: #eff1f7;
+    color: #4bc6f6;
+    font-size: 1.3rem;
+    font-weight: bolder;
+    letter-spacing: 1.5px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+
+    &.disabled {
+      background: #eff1f7;
+      color: #4bc6f6;
+      cursor: not-allowed;
+    }
+
+    &.enabled {
+      background: linear-gradient(
+        12deg,
+        rgba(46, 213, 115, 1) 0%,
+        rgba(123, 237, 159, 1) 100%
+      );
+      color: #ffffff;
+      cursor: pointer;
+    }
+  }
+}

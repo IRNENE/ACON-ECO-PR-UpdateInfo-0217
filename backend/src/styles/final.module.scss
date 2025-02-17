@@ -1,0 +1,47 @@
+.pageBackground {
+  background: #eff1f7;
+  min-height: 100vh;
+  height: auto;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow-y: auto;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 45px;
+
+  .title {
+    .titleColor {
+      color: #3ba6cf;
+      font-size: 2.25rem;
+      font-weight: 900;
+      margin-top: 100px;
+    }
+  }
+  .content {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    .subtitle {
+      p {
+        font-size: 1.25rem;
+        font-weight: 700;
+        text-align: center;
+        letter-spacing: 1px;
+        line-height: 1.5rem;
+        color: #3ba6cf;
+      }
+    }
+  }
+}
