@@ -45,6 +45,8 @@ function LoginPage() {
   const license = useSelector((state) => state.user.license);
   const [isAllFilled, setIsAllFilled] = useState(false);
   const [isInitialSearchValid, setIsInitialSearchValid] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   useEffect(() => {
     if (phone.trim() !== "" && license.trim() !== "") {
       setIsInitialSearchValid(true);
@@ -296,6 +298,8 @@ function LoginPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    // 如果正在提交中，直接返回
+    if (isSubmitting) return;
     const newErrors = {};
 
     // 驗證姓名（不能為空）
@@ -354,7 +358,8 @@ function LoginPage() {
       window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
-
+    // 設置提交狀態為 true
+    setIsSubmitting(true);
     try {
       const submitData = {
         id: formData.id,
@@ -459,6 +464,7 @@ function LoginPage() {
       if (!imageResponse.data.success) {
         throw new Error(imageResponse.data.message || "圖片上傳失敗");
       }
+      setIsSubmitting(false);
 
       await Swal.fire({
         icon: "success",
@@ -484,6 +490,14 @@ function LoginPage() {
         ...prev,
         submit: error.message || "提交失敗，請稍後再試",
       }));
+      setIsSubmitting(false);
+      await Swal.fire({
+        icon: "error",
+        title: "系統錯誤",
+        text: "系統暫時無法處理您的請求，請稍後再試",
+        confirmButtonText: "確定",
+        confirmButtonColor: "#3085d6",
+      });
     }
   };
 
@@ -547,7 +561,7 @@ function LoginPage() {
                   <input
                     type="text"
                     id="license-input"
-                    placeholder="請輸入完整車牌且不需輸入『-』例如：ABC1234"
+                    placeholder="請填完整車牌不含『-』如：ABC1234"
                     value={license}
                     onChange={handleLicenseChange}
                   />
@@ -922,9 +936,43 @@ function LoginPage() {
 
                 <SubmitButton
                   text="送出"
-                  isEnabled={isFormValid}
+                  // isEnabled={isFormValid}
+                  isEnabled={isFormValid && !isSubmitting} // 使用 isSubmitting 來控制按鈕狀態
                   buttonType="submit"
                 />
+                {isSubmitting && (
+                  <div
+                    style={{
+                      position: "fixed",
+                      top: "50%",
+                      left: "50%",
+                      transform: "translate(-50%, -50%)",
+                      zIndex: 9999,
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      gap: "10px",
+                    }}
+                  >
+                    <img
+                      src="/assets/loading.svg"
+                      alt="Loading..."
+                      style={{
+                        transform: "scale(1.2)",
+                        transformOrigin: "center",
+                      }}
+                    />
+                    <div
+                      style={{
+                        color: "#3085d6",
+                        fontSize: "1rem",
+                        fontWeight: "500",
+                      }}
+                    >
+                      資料傳輸中，請稍後
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </form>
