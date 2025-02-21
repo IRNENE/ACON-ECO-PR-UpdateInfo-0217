@@ -590,6 +590,27 @@ function LoginPage() {
                 isEnabled={isAllFilled}
                 disabled={!isInitialSearchValid}
               />
+
+              <div className={styles.youtubeBox}>
+                <a
+                  href="https://youtube.com/shorts/qSHDSXF-bLc?si=Nxo2nWNh0HxRl8t3"
+                  className={styles.youtubeLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <img
+                    src="/assets/youtube-icon.svg"
+                    alt="YouTube"
+                    style={{
+                      width: "24px",
+                      height: "24px",
+                    }}
+                  />
+                  <span className={styles.youtubeLinkText}>
+                    月租補件系統教學影片
+                  </span>
+                </a>
+              </div>
             </div>
           )}
           {/* 3.完整表單欄位 */}

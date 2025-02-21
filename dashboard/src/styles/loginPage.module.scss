@@ -166,3 +166,35 @@
     }
   }
 }
+.youtubeBox {
+  margin-top: 45px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  .youtubeLink {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+
+    &:hover {
+      .youtubeLinkText {
+        text-decoration: underline;
+        color: #004d99; // 深一點的藍色
+      }
+    }
+
+    &:active {
+      .youtubeLinkText {
+        color: #003366; // 更深的藍色
+      }
+    }
+  }
+
+  .youtubeLinkText {
+    color: #0066cc;
+    font-size: 1rem;
+    text-decoration: none;
+    transition: all 0.2s ease; // 平滑過渡效果
+  }
+}
