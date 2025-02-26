@@ -231,7 +231,11 @@ export default function MainPage() {
       dataIndex: "createat",
       key: "createat",
       width: 180,
-      render: (text) => dayjs(text).format("YYYY-MM-DD HH:mm"),
+      render: (text) => {
+        const date = new Date(text);
+        date.setHours(date.getHours() + 8);
+        return date.toISOString().replace("T", " ").substring(0, 19);
+      },
     },
   ];
 

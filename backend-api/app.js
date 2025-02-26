@@ -289,11 +289,17 @@ const upload = multer({
 
 // 新增圖片
 app.post("/upload-images", upload, async (req, res) => {
+  console.log("\n=== 開始處理圖片上傳請求 ===");
+  const requestPhotoTime = new Date().toLocaleString("zh-TW", {
+    timeZone: "Asia/Taipei",
+  });
+  console.log("請求時間:", requestPhotoTime);
+  // console.log("請求時間:", new Date().toISOString());
+  console.log("檔案數量:", req.files ? req.files.length : 0);
   try {
     if (!req.files || req.files.length === 0) {
       throw new Error("未收到任何檔案");
     }
-
     if (!process.env.R2_BUCKET_NAME) {
       throw new Error("未設置 R2_BUCKET_NAME 環境變數");
     }
@@ -303,42 +309,51 @@ app.post("/upload-images", upload, async (req, res) => {
 
     for (const file of req.files) {
       try {
+        console.log(`上傳檔案 ${file.originalname} 至 R2`);
         const uploadParams = {
           Bucket: process.env.R2_BUCKET_NAME,
           Key: `images/${file.originalname}`,
           Body: file.buffer,
           ContentType: file.mimetype,
         };
-        const uploadResult = await r2Client.send(
-          new PutObjectCommand(uploadParams)
-        );
+        await r2Client.send(new PutObjectCommand(uploadParams));
+        console.log(`R2 上傳成功: ${file.originalname}`);
+
         const [userId, fileType] = file.originalname.split("_");
         if (!userId || !fileType) {
           throw new Error(`檔案名稱格式錯誤: ${file.originalname}`);
         }
-        const [fileResult] = await db.query(
-          `INSERT INTO UpdateFiles (
-            name,
-            path,
-            size,
-            mimetype,
-            createat
-          ) VALUES (?, ?, ?, ?, NOW())`,
-          [
-            file.originalname,
-            `images/${file.originalname}`,
-            file.size,
-            file.mimetype,
-          ]
-        );
 
-        await db.query(
-          `INSERT INTO RegisterUpdateImage (
-            register_id,
-            file_id
-          ) VALUES (?, ?)`,
-          [userId, fileResult.insertId]
-        );
+        console.log("存入 UpdateFiles");
+        let fileResult;
+        try {
+          const [insertResult] = await db.query(
+            `INSERT INTO UpdateFiles (name, path, size, mimetype, createat) VALUES (?, ?, ?, ?, NOW())`,
+            [
+              file.originalname,
+              `images/${file.originalname}`,
+              file.size,
+              file.mimetype,
+            ]
+          );
+          fileResult = insertResult;
+        } catch (dbError) {
+          throw new Error(`資料庫插入失敗: ${dbError.message}`);
+        }
+
+        if (!fileResult || !fileResult.insertId) {
+          throw new Error(`資料庫插入 UpdateFiles 失敗，無法獲取 insertId`);
+        }
+
+        console.log("存入 RegisterUpdateImage 關聯表");
+        try {
+          await db.query(
+            `INSERT INTO RegisterUpdateImage (register_id, file_id) VALUES (?, ?)`,
+            [userId, fileResult.insertId]
+          );
+        } catch (relationError) {
+          throw new Error(`關聯記錄失敗: ${relationError.message}`);
+        }
 
         uploadedFiles.push({
           type: fileType,
@@ -348,16 +363,14 @@ app.post("/upload-images", upload, async (req, res) => {
           path: `images/${file.originalname}`,
         });
       } catch (fileError) {
-        const errorInfo = {
+        errors.push({
           fileName: file.originalname,
           error: fileError.message,
           time: new Date().toISOString(),
-        };
-        errors.push(errorInfo);
-        console.error("\n=== 檔案處理錯誤 ===");
-        console.error(errorInfo);
+        });
       }
     }
+
     if (uploadedFiles.length > 0) {
       res.json({
         success: true,
@@ -372,28 +385,11 @@ app.post("/upload-images", upload, async (req, res) => {
       throw new Error("所有檔案上傳失敗");
     }
   } catch (error) {
-    const errorTime = new Date().toISOString();
-    console.error("\n=== 上傳處理失敗 ===");
-    console.error("錯誤時間:", errorTime);
-    console.error("錯誤類型:", error.name);
-    console.error("錯誤訊息:", error.message);
-    console.error("錯誤堆疊:", error.stack);
-    if (req.files) {
-      console.error(
-        "相關檔案:",
-        req.files.map((f) => ({
-          name: f.originalname,
-          size: f.size,
-          type: f.mimetype,
-        }))
-      );
-    }
-
     res.status(500).json({
       success: false,
       message: "圖片上傳處理失敗",
       error: error.message,
-      time: errorTime,
+      time: new Date().toISOString(),
     });
   }
 });
